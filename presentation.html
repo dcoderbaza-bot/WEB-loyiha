@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APEX FITNESS — Taqdimot Slaydlari</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          colors: {
+            brand: {
+              orange: '#f97316',
+              amber: '#f59e0b',
+              dark: '#090d16',
+              card: '#111827',
+              border: '#1f2937'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #06090e;
+      color: #f3f4f6;
+      overflow: hidden;
+      user-select: none;
+    }
+    .slide {
+      display: none;
+      opacity: 0;
+      transform: scale(0.96) translateY(10px);
+      transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .slide.active {
+      display: flex;
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+    .glass-card {
+      background: rgba(17, 24, 39, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glow-orange {
+      box-shadow: 0 0 50px -10px rgba(249, 115, 22, 0.3);
+    }
+    @media print {
+      body {
+        overflow: visible !important;
+        background: white !important;
+        color: black !important;
+      }
+      .slide {
+        display: flex !important;
+        opacity: 1 !important;
+        transform: none !important;
+        page-break-after: always;
+        height: 100vh !important;
+        min-height: 100vh !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="h-screen w-screen flex flex-col justify-between font-sans relative">
+
+  <!-- Background Ambient Glow -->
+  <div class="fixed inset-0 pointer-events-none z-0">
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-orange-600/15 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-amber-500/15 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-cyan-500/5 rounded-full blur-[120px]"></div>
+  </div>
+
+  <!-- Top Controls Bar -->
+  <header class="relative z-20 flex items-center justify-between px-6 py-4 border-b border-slate-800/80 bg-slate-950/60 backdrop-blur-md">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-orange-500/20">
+        AX
+      </div>
+      <div>
+        <h1 class="text-sm font-extrabold tracking-wide text-white uppercase flex items-center gap-2">
+          Apex Fitness <span class="text-[10px] bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded border border-orange-500/30">Loyiha Taqdimoti</span>
+        </h1>
+        <p class="text-xs text-slate-400">Aqlli Fitnes Klubi Boshqaruv Tizimi & Reputatsiya Hubi</p>
+      </div>
+    </div>
+
+    <!-- Progress & Slide Indicator -->
+    <div class="flex items-center gap-4">
+      <div class="hidden sm:flex items-center gap-2 font-mono text-xs text-slate-400">
+        <span>Slayd:</span>
+        <span id="slideCounter" class="text-orange-400 font-bold text-sm bg-slate-900 px-2.5 py-1 rounded border border-slate-800">1 / 10</span>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="flex items-center gap-1.5 no-print">
+        <button onclick="toggleFullscreen()" class="p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition text-xs flex items-center gap-1.5" title="To'liq ekran">
+          <i class="fa-solid fa-expand"></i>
+        </button>
+        <button onclick="window.print()" class="p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition text-xs flex items-center gap-1.5" title="PDF saqlash / Chop etish">
+          <i class="fa-solid fa-file-pdf"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Progress Bar Line -->
+  <div class="w-full bg-slate-900 h-1 relative z-20">
+    <div id="progressBar" class="bg-gradient-to-r from-orange-500 to-amber-400 h-1 transition-all duration-300" style="width: 10%;"></div>
+  </div>
+
+  <!-- MAIN SLIDES CONTAINER -->
+  <main class="relative z-10 flex-grow flex items-center justify-center p-6 md:p-10 max-w-7xl w-full mx-auto overflow-hidden">
+
+    <!-- ============================================== -->
+    <!-- SLIDE 1: MUQOVA                                -->
+    <!-- ============================================== -->
+    <section class="slide active flex-col justify-center items-center text-center w-full h-full max-w-5xl" data-title="Muqova">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/30 text-orange-400 text-xs font-semibold uppercase tracking-wider mb-6">
+        <span class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+        Yangi Avlod Texnologik Ekotizimi
+      </div>
+      <h1 class="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-none mb-6">
+        <span class="bg-gradient-to-r from-orange-400 via-amber-300 to-white bg-clip-text text-transparent">APEX FITNESS</span>
+      </h1>
+      <p class="text-lg sm:text-2xl text-slate-300 font-normal max-w-3xl mb-8 leading-relaxed">
+        Smart NFC Kirish, IoT Shkaflar, CCTV Kamera Nazorati va Reputatsiyani Boshqarish Platformasi
+      </p>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full max-w-4xl text-left mt-4">
+        <div class="glass-card p-4 rounded-2xl border border-slate-800/80">
+          <i class="fa-solid fa-id-card text-emerald-400 text-xl mb-2"></i>
+          <h4 class="text-sm font-bold text-white">NFC & IoT</h4>
+          <p class="text-xs text-slate-400">Kontaktsiz turniket va aqlli shkaflar</p>
+        </div>
+        <div class="glass-card p-4 rounded-2xl border border-slate-800/80">
+          <i class="fa-solid fa-video text-rose-400 text-xl mb-2"></i>
+          <h4 class="text-sm font-bold text-white">CCTV Nazorat</h4>
+          <p class="text-xs text-slate-400">4 ta kamera va AI harakat datchigi</p>
+        </div>
+        <div class="glass-card p-4 rounded-2xl border border-slate-800/80">
+          <i class="fa-solid fa-headset text-amber-400 text-xl mb-2"></i>
+          <h4 class="text-sm font-bold text-white">CRM & Reputatsiya</h4>
+          <p class="text-xs text-slate-400">Mijoz fikrlari va tahliliy hisobot</p>
+        </div>
+        <div class="glass-card p-4 rounded-2xl border border-slate-800/80">
+          <i class="fa-solid fa-shield-halved text-cyan-400 text-xl mb-2"></i>
+          <h4 class="text-sm font-bold text-white">4 Rolli RBAC</h4>
+          <p class="text-xs text-slate-400">Mijoz, Qorovul, Menejer, Admin</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SLIDE 2: DOLZARB MUAMMOLAR                      -->
+    <!-- ============================================== -->
+    <section class="slide flex-col justify-center w-full h-full max-w-5xl" data-title="Muammolar">
+      <div class="text-left mb-6">
+        <span class="text-rose-400 font-mono text-xs font-bold uppercase tracking-wider">01. Muammolar Tahlili</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-1">An'anaviy Fitnes Zallaridagi Qiyinchiliklar</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="glass-card p-6 rounded-2xl border border-rose-500/20 bg-rose-950/10">
+          <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 text-xl mb-4">
+            <i class="fa-solid fa-users-slash"></i>
+          </div>
+          <h3 class="text-lg font-bold text-white mb-2">Navbatlar va Yo'qolgan Kalitlar</h3>
+          <p class="text-sm text-slate-300 leading-relaxed">
+            Qog'oz kartalar, plastik kalitlar doim yo'qoladi, almashtirish qo'shimcha xarajat talab qiladi va resepshnda uzun navbatlar yuzaga keladi.
+          </p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl border border-amber-500/20 bg-amber-950/10">
+          <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-xl mb-4">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <h3 class="text-lg font-bold text-white mb-2">E'tiborsiz Qolgan Shikoyatlar</h3>
+          <p class="text-sm text-slate-300 leading-relaxed">
+            Mijozlarning tozalik, murabbiylar yoki trenajyorlar bo'yicha e'tirozlari daftarlarda qolib ketadi, bu esa klub nufuzini tushiradi.
+          </p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl border border-purple-500/20 bg-purple-950/10">
+          <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 text-xl mb-4">
+            <i class="fa-solid fa-eye-slash"></i>
+          </div>
+          <h3 class="text-lg font-bold text-white mb-2">Nazorat va Xavfsizlik Yetishmovchiligi</h3>
+          <p class="text-sm text-slate-300 leading-relaxed">
+            Zalning qaysi vaqtda qanchalik to'la ekanligi noma'lum, videokameralar markazlashmagan va xodimlar uchun aniq xizmat standartlari yo'q.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SLIDE 3: BIZNING YECHIM                         -->
+    <!-- ============================================== -->
+    <section class="slide flex-col justify-center w-full h-full max-w-5xl" data-title="Yechim">
+      <div class="text-left mb-6">
+        <span class="text-emerald-400 font-mono text-xs font-bold uppercase tracking-wider">02. Innovatsion Yechim</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-1">Apex Fitness Kompleks Raqamli Tizimi</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="glass-card p-6 rounded-2xl border border-slate-800">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-lg bg-orange-500/20 text-orange-400 flex items-center justify-center font-bold">1</div>
+            <h3 class="text-lg font-bold text-white">Yagona Raqamli Identifikatsiya</h3>
+          </div>
+          <p class="text-sm text-slate-300 leading-relaxed">
+            Har bir mijoz virtual NFC karta/bilaguzuk oladi. Turniket, shkaf va xizmatlar bitta raqamli kalit orqali 1 soniyada ochiladi.
+          </p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl border border-slate-800">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">2</div>
+            <h3 class="text-lg font-bold text-white">Sun'iy Intellekt va CCTV Xavfsizlik</h3>
+          </div>
+          <p class="text-sm text-slate-300 leading-relaxed">
+            Turniket, asosiy mashg'ulot zali, SPA va chiqish zonalari real vaqt rejimida 4 ta kamera orqali monitoring qilinadi.
+          </p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl border border-slate-800">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">3</div>
+            <h3 class="text-lg font-bold text-white">Reputatsiya va Fikrlar CRM</h3>
+          </div>
+          <p class="text-sm text-slate-300 leading-relaxed">
+            Mijoz taklif va shikoyatlarini qoldirishi bilanoq tizimda qayd qilinadi, holati (Yangi, Jarayonda, Hal qilindi) nazoratga olinadi.
+          </p>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl border border-slate-800">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">4</div>
+            <h3 class="text-lg font-bold text-white">Shaffoflik va Xodimlar SOP</h3>
+          </div>
+          <p class="text-sm text-slate-300 leading-relaxed">
+            Har bir xodim uchun xizmat ko'rsatish standartlari (SOP) va doimiy test tizimi ishlab chiqilgan.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SLIDE 4: RBAC (FOYDALANUVCHI ROLLARI)           -->
+    <!-- ============================================== -->
+    <section class="slide flex-col justify-center w-full h-full max-w-5xl" data-title="RBAC Rollar">
+      <div class="text-left mb-6">
+        <span class="text-cyan-400 font-mono text-xs font-bold uppercase tracking-wider">03. Xavfsizlik & Arxitektura</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-1">4 Darajali Rolga Asoslangan Boshqaruv (RBAC)</h2>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Rol 1 -->
+        <div class="glass-card p-5 rounded-2xl border border-emerald-500/30 flex flex-col justify-between">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg mb-3">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <h3 class="text-base font-bold text-white">Mijoz (Sportchi)</h3>
+            <p class="text-xs text-emerald-400 font-mono mb-2">Login: mijoz</p>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Zal bandligini ko'rish, NFC shkafini ochish/yopish, narxlarni ko'rish, taklif va sharh qoldirish.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-400">
+            Faqat shaxsiy ma'lumotlar
+          </div>
+        </div>
+
+        <!-- Rol 2 -->
+        <div class="glass-card p-5 rounded-2xl border border-cyan-500/30 flex flex-col justify-between">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-lg mb-3">
+              <i class="fa-solid fa-video"></i>
+            </div>
+            <h3 class="text-base font-bold text-white">Xavfsizlik Xizmati</h3>
+            <p class="text-xs text-cyan-400 font-mono mb-2">Login: security</p>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              4 ta jonli videokamera monitoringi, AI harakat xabarnomalari, turniket orqali kirish-chiqish nazorati.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-400">
+            CCTV & Turniket huquqi
+          </div>
+        </div>
+
+        <!-- Rol 3 -->
+        <div class="glass-card p-5 rounded-2xl border border-amber-500/30 flex flex-col justify-between">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg mb-3">
+              <i class="fa-solid fa-headset"></i>
+            </div>
+            <h3 class="text-base font-bold text-white">CRM Menejeri</h3>
+            <p class="text-xs text-amber-400 font-mono mb-2">Login: manager</p>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Mijozlar shikoyatlarini ko'rib chiqish, statuslarini yangilash, xodimlar SOP qoidalarini tekshirish.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-400">
+            CRM & SOP huquqi
+          </div>
+        </div>
+
+        <!-- Rol 4 -->
+        <div class="glass-card p-5 rounded-2xl border border-rose-500/30 flex flex-col justify-between">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center text-lg mb-3">
+              <i class="fa-solid fa-crown"></i>
+            </div>
+            <h3 class="text-base font-bold text-white">Super Admin</h3>
+            <p class="text-xs text-rose-400 font-mono mb-2">Login: admin</p>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              To'liq tizim nazorati, foydalanuvchilar boshqaruvi, audit jurnali, xavfsizlik loglari va barcha modullar.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-400">
+            100% Cheksiz ruxsat
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SLIDE 5: NFC & IOT SHKAFLAR                     -->
+    <!-- ============================================== -->
+    <section class="slide flex-col justify-center w-full h-full max-w-5xl" data-title="NFC & IoT">
+      <div class="text-left mb-6">
+        <span class="text-emerald-400 font-mono text-xs font-bold uppercase tracking-wider">04. Smart Texnologiya</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-1">Aqlli NFC Turniket va IoT Shkaflar</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+        <div class="space-y-4">
+          <div class="glass-card p-4 rounded-xl border border-slate-800">
+            <h4 class="font-bold text-white text-base flex items-center gap-2">
+              <i class="fa-solid fa-bolt text-amber-400"></i> Tezkor Kontaktsiz O'tish
+            </h4>
+            <p class="text-xs text-slate-300 mt-1">Mijoz smartfoni yoki NFC bilaguzugi orqali turniketga tekkizishi bilan kirish tasdiqlanadi va hisobdan dars yechiladi.</p>
+          </div>
+
+          <div class="glass-card p-4 rounded-xl border border-slate-800">
+            <h4 class="font-bold text-white text-base flex items-center gap-2">
+              <i class="fa-solid fa-lock text-emerald-400"></i> Avtomatik Shkaf Biriktirish
+            </h4>
+            <p class="text-xs text-slate-300 mt-1">Tizim bo'sh turgan shkafni (masalan, #24) avtomatik tarzda mijoz kartasiga biriktiradi. Boshqa hech kim uni ocha olmaydi.</p>
+          </div>
+
+          <div class="glass-card p-4 rounded-xl border border-slate-800">
+            <h4 class="font-bold text-white text-base flex items-center gap-2">
+              <i class="fa-solid fa-bell text-rose-400"></i> Xavfsizlik Signali
+            </h4>
+            <p class="text-xs text-slate-300 mt-1">Agar shkaf ruxsatsiz ochilishga urinilsa yoki ochiq qolsa, qorovul pultiga zudlik bilan signal tushadi.</p>
+          </div>
+        </div>
+
+        <!-- Visual Mockup -->
+        <div class="glass-card p-6 rounded-2xl border border-emerald-500/30 text-center glow-orange">
+          <div class="w-20 h-20 mx-auto rounded-full bg-emerald-500/10 border-2 border-emerald-500/40 flex items-center justify-center text-emerald-400 text-3xl mb-4 animate-pulse">
+            <i class="fa-solid fa-wifi"></i>
+          </div>
+          <h3 class="text-xl font-black text-white">NFC INTERACTIVE HUB</h3>
+          <p class="text-xs text-slate-400 font-mono mt-1">Protokol: ISO/IEC 14443 Type A</p>
+          <div class="mt-6 inline-flex items-center gap-2 bg-slate-900 px-4 py-2 rounded-xl border border-slate-800 text-xs font-mono text-emerald-300">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Status: Turniket va 30 ta shkaf faol
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SLIDE 6: CCTV KAMERA NAZORATI                    -->
+    <!-- ============================================== -->
+    <section class="slide flex-col justify-center w-full h-full max-w-5xl" data-title="CCTV Monitoring">
+      <div class="text-left mb-6">
+        <span class="text-rose-400 font-mono text-xs font-bold uppercase tracking-wider">05. Video Nazorat</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-1">4 Kanal CCTV Kamera & Sun'iy Intellekt</h2>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        <div class="glass-card p-3 rounded-xl border border-slate-800 text-center">
+          <span class="text-[10px] text-rose-400 font-mono flex items-center justify-center gap-1 mb-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span> REC
+          </span>
+          <p class="text-xs font-bold text-white">CAM 01: Turniket</p>
+          <p class="text-[11px] text-slate-400">Kirish-chiqish eshigi</p>
+        </div>
+
+        <div class="glass-card p-3 rounded-xl border border-slate-800 text-center">
+          <span class="text-[10px] text-rose-400 font-mono flex items-center justify-center gap-1 mb-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span> REC
+          </span>
+          <p class="text-xs font-bold text-white">CAM 02: Katta Zal</p>
+          <p class="text-[11px] text-slate-400">Trenajyorlar maydoni</p>
+        </div>
+
+        <div class="glass-card p-3 rounded-xl border border-slate-800 text-center">
+          <span class="text-[10px] text-rose-400 font-mono flex items-center justify-center gap-1 mb-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span> REC
+          </span>
+          <p class="text-xs font-bold text-white">CAM 03: Kardio & SPA</p>
+          <p class="text-[11px] text-slate-400">Yugurish yo'laklari</p>
+        </div>
+
+        <div class="glass-card p-3 rounded-xl border border-slate-800 text-center">
+          <span class="text-[10px] text-rose-400 font-mono flex items-center justify-center gap-1 mb-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span> REC
+          </span>
+          <p class="text-xs font-bold text-white">CAM 04: Favqulodda Chiqish</p>
+          <p class="text-[11px] text-slate-400">Evakuatsiya eshigi</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="glass-card p-4 rounded-xl border border-slate-800">
+          <h4 class="font-bold text-white text-sm mb-1 flex items-center gap-2">
+            <i class="fa-solid fa-person-walking text-cyan-400"></i> AI Harakat Detektori (Motion Sensor)
+          </h4>
+          <p class="text-xs text-slate-300">Kameralar nooddiy to'planish yoki taqiqlangan zonalarga ruxsatsiz kirishni avtomatik aniqlab, qorovulga ogohlantirish yuboradi.</p>
+        </div>
+        <div class="glass-card p-4 rounded-xl border border-slate-800">
+          <h4 class="font-bold text-white text-sm mb-1 flex items-center gap-2">
+            <i class="fa-solid fa-shield-virus text-amber-400"></i> Maxfiylik va Shaxsiy Daxlsizlik
+          </h4>
+          <p class="text-xs text-slate-300">Kiyinish va dush xonalarida kameralar umuman yo'q. Tizim qonunchilik va etika qoidalariga to'liq mos ishlaydi.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SLIDE 7: QAYTA ALOQA CRM                        -->
+    <!-- ============================================== -->
+    <section class="slide flex-col justify-center w-full h-full max-w-5xl" data-title="CRM & Reputatsiya">
+      <div class="text-left mb-6">
+        <span class="text-amber-400 font-mono text-xs font-bold uppercase tracking-wider">06. Xizmat Sifati</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-1">Reputatsiya Menejmenti va Qayta Aloqa CRM</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="glass-card p-5 rounded-2xl border border-slate-800">
+          <div class="w-10 h-10 rounded-lg bg-orange-500/20 text-orange-400 flex items-center justify-center text-lg mb-3">
+            <i class="fa-solid fa-comment-dots"></i>
+          </div>
+          <h4 class="text-base font-bold text-white mb-1">Tezkor Murojaat Yuborish</h4>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Mijoz portal orqali tozalik, murabbiy, harorat yoki trenajyor haqida darhol baho va taklif yozib qoldiradi.
+          </p>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl border border-slate-800">
+          <div class="w-10 h-10 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg mb-3">
+            <i class="fa-solid fa-list-check"></i>
+          </div>
+          <h4 class="text-base font-bold text-white mb-1">Statuslar Nazorati</h4>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Menejer har bir murojaatni "Yangi" holatidan "Ko'rib chiqilmoqda" va "Hal qilindi" holatiga o'tkazadi. Hech bir muammo unutilmaydi.
+          </p>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl border border-slate-800">
+          <div class="w-10 h-10 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg mb-3">
+            <i class="fa-solid fa-chart-pie"></i>
+          </div>
+          <h4 class="text-base font-bold text-white mb-1">Chart.js Analitikasi</h4>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Qoniqish darajasi (CSAT), oylik tendensiyalar va xodimlar reytingi interaktiv grafiklar orqali ko'rsatiladi.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SLIDE 8: XODIMLAR SOP                           -->
+    <!-- ============================================== -->
+    <section class="slide flex-col justify-center w-full h-full max-w-5xl" data-title="Xodimlar SOP">
+      <div class="text-left mb-6">
+        <span class="text-sky-400 font-mono text-xs font-bold uppercase tracking-wider">07. Korporativ Madaniyat</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-1">Xodimlar SOP (Standard Operating Procedures)</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-4">
+          <h3 class="text-lg font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-book-open text-sky-400"></i> Xizmat Ko'rsatish Qoidalari
+          </h3>
+          <ul class="space-y-2.5 text-xs text-slate-300">
+            <li class="flex items-start gap-2">
+              <i class="fa-solid fa-check text-emerald-400 mt-0.5"></i>
+              <span><strong>Mijozni kutib olish:</strong> 3 soniya ichida tabassum bilan salomlashish va ism bilan murojaat qilish.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="fa-solid fa-check text-emerald-400 mt-0.5"></i>
+              <span><strong>Gigiyena va tartib:</strong> Har 45 daqiqada zaldagi tozalik va ventilyatsiyani nazorat qilish.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="fa-solid fa-check text-emerald-400 mt-0.5"></i>
+              <span><strong>Ziddiyatlarni bartaraf etish:</strong> Mijoz e'tirozini to'xtatmasdan tinglash va darhol yechim berish.</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-4">
+          <h3 class="text-lg font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-graduation-cap text-amber-400"></i> Interaktiv Bilim Baholash Tizimi
+          </h3>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Platformada xodimlar uchun test moduli mavjud. Resepshn xodimlari, instruktorlar va qorovullar muntazam ravishda SOP bo'yicha test topshiradilar.
+          </p>
+          <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-xs font-mono text-slate-300">
+            <span class="text-emerald-400 font-bold">Natija:</span> Insoniy omil tufayli xatolar 70% ga kamayadi, xizmat sifati esa doimiy yuqori darajada saqlanadi.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SLIDE 9: TEXNOLOGIK STAK                        -->
+    <!-- ============================================== -->
+    <section class="slide flex-col justify-center w-full h-full max-w-5xl" data-title="Texnologik Stak">
+      <div class="text-left mb-6">
+        <span class="text-purple-400 font-mono text-xs font-bold uppercase tracking-wider">08. Texnologiyalar</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mt-1">Zamonaviy va Barqaror Texnologik Stak</h2>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        <div class="glass-card p-4 rounded-xl border border-slate-800 text-center">
+          <i class="fa-brands fa-node-js text-emerald-400 text-3xl mb-2"></i>
+          <h4 class="font-bold text-white text-sm">Node.js</h4>
+          <p class="text-[11px] text-slate-400">Yengil va mustahkam Backend REST API</p>
+        </div>
+
+        <div class="glass-card p-4 rounded-xl border border-slate-800 text-center">
+          <i class="fa-brands fa-html5 text-orange-400 text-3xl mb-2"></i>
+          <h4 class="font-bold text-white text-sm">HTML5 / JS (ES6+)</h4>
+          <p class="text-[11px] text-slate-400">Zero-dependency, tezkor Frontend</p>
+        </div>
+
+        <div class="glass-card p-4 rounded-xl border border-slate-800 text-center">
+          <i class="fa-solid fa-wind text-sky-400 text-3xl mb-2"></i>
+          <h4 class="font-bold text-white text-sm">Tailwind CSS</h4>
+          <p class="text-[11px] text-slate-400">Zamonaviy Dark rejim va moslashuvchan UI</p>
+        </div>
+
+        <div class="glass-card p-4 rounded-xl border border-slate-800 text-center">
+          <i class="fa-solid fa-chart-line text-purple-400 text-3xl mb-2"></i>
+          <h4 class="font-bold text-white text-sm">Chart.js</h4>
+          <p class="text-[11px] text-slate-400">Vizual analitika va metrikalar</p>
+        </div>
+      </div>
+
+      <div class="glass-card p-4 rounded-xl border border-slate-800 flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h4 class="font-bold text-white text-sm">Bulutli Joylashtirish (Cloud Deployment):</h4>
+          <p class="text-xs text-slate-400">Loyiha jahon miqyosidagi Vercel bulutli serveriga joylashtirilgan bo'lib, 99.9% uptime bilan ishlaydi.</p>
+        </div>
+        <span class="px-3 py-1 bg-white text-black font-extrabold text-xs rounded-lg flex items-center gap-1">
+          ▲ Vercel Production
+        </span>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SLIDE 10: XULOSA VA QR KOD                      -->
+    <!-- ============================================== -->
+    <section class="slide flex-col justify-center items-center text-center w-full h-full max-w-5xl" data-title="Jonli Demo & QR">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-4">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        Jonli Sinov & Xulosa
+      </div>
+
+      <h2 class="text-3xl sm:text-5xl font-black text-white mb-2">
+        Platformani Hozir O'zingiz Sinab Ko'ring!
+      </h2>
+      <p class="text-sm sm:text-base text-slate-300 max-w-xl mb-6">
+        Kamerangizni QR kodga yo'naltiring yoki quyidagi havola orqali veb-saytga to'g'ridan-to'g'ri kiring:
+      </p>
+
+      <!-- QR CODE CONTAINER -->
+      <div class="glass-card p-5 rounded-3xl border-2 border-orange-500/40 glow-orange flex flex-col items-center mb-6">
+        <div class="bg-white p-3.5 rounded-2xl shadow-2xl">
+          <img 
+            src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https://web-loyiha777.vercel.app/&bgcolor=ffffff&color=090d16&margin=0" 
+            alt="Apex Fitness Vercel QR Code"
+            class="w-48 h-48 sm:w-52 sm:h-52 object-contain rounded-lg"
+          >
+        </div>
+        <a 
+          href="https://web-loyiha777.vercel.app/" 
+          target="_blank" 
+          class="mt-4 text-sm sm:text-base font-bold text-orange-400 hover:text-orange-300 transition flex items-center gap-2 font-mono"
+        >
+          <span>https://web-loyiha777.vercel.app/</span>
+          <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+        </a>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a 
+          href="https://web-loyiha777.vercel.app/" 
+          target="_blank" 
+          class="px-6 py-3 rounded-xl bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white font-bold text-sm shadow-lg shadow-orange-500/25 transition flex items-center gap-2"
+        >
+          <i class="fa-solid fa-globe"></i> Saytni Yangi Oynada Ochish
+        </a>
+        <button 
+          onclick="goToSlide(0)" 
+          class="px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm transition flex items-center gap-2"
+        >
+          <i class="fa-solid fa-rotate-left"></i> Boshiga Qaytish
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Navigation Bar -->
+  <footer class="relative z-20 px-6 py-4 border-t border-slate-800/80 bg-slate-950/60 backdrop-blur-md flex items-center justify-between no-print">
+    <div class="text-xs text-slate-400 hidden sm:flex items-center gap-2">
+      <i class="fa-regular fa-keyboard text-orange-400"></i>
+      <span>Boshqarish: <strong>←</strong> / <strong>→</strong> tugmalari yoki <strong>Space</strong></span>
+    </div>
+
+    <!-- Navigation Arrows -->
+    <div class="flex items-center gap-3 mx-auto sm:mx-0">
+      <button 
+        id="prevBtn" 
+        onclick="prevSlide()" 
+        class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed"
+      >
+        <i class="fa-solid fa-arrow-left"></i> Oldingisi
+      </button>
+
+      <!-- Thumbnails Dots -->
+      <div id="dotsContainer" class="flex items-center gap-1.5 px-2"></div>
+
+      <button 
+        id="nextBtn" 
+        onclick="nextSlide()" 
+        class="px-4 py-2 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white text-xs font-bold transition flex items-center gap-2 shadow-md shadow-orange-500/20 disabled:opacity-30 disabled:cursor-not-allowed"
+      >
+        Keyingisi <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+
+    <div class="text-xs font-mono text-slate-500 hidden md:block">
+      Apex Fitness © 2026
+    </div>
+  </footer>
+
+  <!-- SCRIPT -->
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const slideCounter = document.getElementById('slideCounter');
+    const progressBar = document.getElementById('progressBar');
+    const dotsContainer = document.getElementById('dotsContainer');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    let currentIndex = 0;
+    const totalSlides = slides.length;
+
+    // Create Dots
+    slides.forEach((slide, idx) => {
+      const dot = document.createElement('button');
+      dot.className = `w-2.5 h-2.5 rounded-full transition-all duration-300 ${idx === 0 ? 'bg-orange-500 w-6' : 'bg-slate-700 hover:bg-slate-500'}`;
+      dot.title = slide.getAttribute('data-title') || `Slayd ${idx + 1}`;
+      dot.onclick = () => goToSlide(idx);
+      dotsContainer.appendChild(dot);
+    });
+
+    const dots = dotsContainer.querySelectorAll('button');
+
+    function updateSlide() {
+      slides.forEach((slide, idx) => {
+        slide.classList.remove('active');
+        if (idx === currentIndex) {
+          slide.classList.add('active');
+        }
+      });
+
+      dots.forEach((dot, idx) => {
+        if (idx === currentIndex) {
+          dot.className = 'w-6 h-2.5 rounded-full bg-orange-500 transition-all duration-300';
+        } else {
+          dot.className = 'w-2.5 h-2.5 rounded-full bg-slate-700 hover:bg-slate-500 transition-all duration-300';
+        }
+      });
+
+      slideCounter.innerText = `${currentIndex + 1} / ${totalSlides}`;
+      progressBar.style.width = `${((currentIndex + 1) / totalSlides) * 100}%`;
+
+      prevBtn.disabled = currentIndex === 0;
+      nextBtn.disabled = currentIndex === totalSlides - 1;
+    }
+
+    function nextSlide() {
+      if (currentIndex < totalSlides - 1) {
+        currentIndex++;
+        updateSlide();
+      }
+    }
+
+    function prevSlide() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateSlide();
+      }
+    }
+
+    function goToSlide(index) {
+      if (index >= 0 && index < totalSlides) {
+        currentIndex = index;
+        updateSlide();
+      }
+    }
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+        if (currentIndex < totalSlides - 1) {
+          nextSlide();
+        }
+      } else if (e.key === 'ArrowLeft') {
+        prevSlide();
+      }
+    });
+
+    // Fullscreen toggle
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.error(err);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    // Touch swipe support for mobile
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    window.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    });
+
+    window.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      if (touchEndX < touchStartX - 50) {
+        nextSlide();
+      }
+      if (touchEndX > touchStartX + 50) {
+        prevSlide();
+      }
+    });
+
+    updateSlide();
+  </script>
+</body>
+</html>
